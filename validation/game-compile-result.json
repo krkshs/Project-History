@@ -1,0 +1,7 @@
+{
+  "Scope": "All game sources; dependency classes supplied by the original game JAR",
+  "SourceFiles": 1504,
+  "Release": 8,
+  "ExitCode": 0,
+  "Log": "build/javac.log"
+}

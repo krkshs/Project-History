@@ -1,0 +1,31 @@
+package com.badlogic.gdx.scenes.scene2d.utils;
+
+import com.badlogic.gdx.graphics.g2d.Batch;
+
+public interface Drawable {
+  void draw(Batch paramBatch, float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4);
+  
+  float getLeftWidth();
+  
+  void setLeftWidth(float paramFloat);
+  
+  float getRightWidth();
+  
+  void setRightWidth(float paramFloat);
+  
+  float getTopHeight();
+  
+  void setTopHeight(float paramFloat);
+  
+  float getBottomHeight();
+  
+  void setBottomHeight(float paramFloat);
+  
+  float getMinWidth();
+  
+  void setMinWidth(float paramFloat);
+  
+  float getMinHeight();
+  
+  void setMinHeight(float paramFloat);
+}

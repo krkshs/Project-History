@@ -1,0 +1,9 @@
+package com.badlogic.gdx.backends.lwjgl3.audio.mock;
+
+import com.badlogic.gdx.audio.AudioRecorder;
+
+public class MockAudioRecorder implements AudioRecorder {
+  public void read(short[] samples, int offset, int numSamples) {}
+  
+  public void dispose() {}
+}

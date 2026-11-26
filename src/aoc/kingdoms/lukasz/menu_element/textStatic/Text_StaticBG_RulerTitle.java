@@ -1,0 +1,83 @@
+package aoc.kingdoms.lukasz.menu_element.textStatic;
+
+import aoc.kingdoms.lukasz.jakowski.CFG;
+import aoc.kingdoms.lukasz.jakowski.Renderer.Renderer;
+import aoc.kingdoms.lukasz.menu.Colors;
+import aoc.kingdoms.lukasz.menu_element.MenuElement_Type;
+import aoc.kingdoms.lukasz.textures.Images;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
+public class Text_StaticBG_RulerTitle extends Text_Static {
+   public Text_StaticBG_RulerTitle(String sText, int iPosX, int iPosY, int iWidth, int iHeight) {
+      this.typeOfElement = MenuElement_Type.TEXT;
+      this.fontID = CFG.FONT_REGULAR;
+      this.iTextPositionX = CFG.PADDING * 2;
+      this.setPosX(iPosX);
+      this.setPosY(iPosY);
+      this.setWidth(iWidth);
+      this.setHeight(iHeight);
+      this.setText(sText);
+      this.updateTextPosition();
+      int tWMax = 0;
+
+      while (this.iTextWidth > this.getWidth() && this.getText().length() > 5) {
+         if (++tWMax >= 100) {
+            break;
+         }
+
+         this.setText(this.getText().substring(0, Math.max(1, this.getText().length() - 3)) + "..");
+      }
+   }
+
+   @Override
+   public void draw(SpriteBatch oSB, int iTranslateX, int iTranslateY, boolean isActive, boolean scrollableY) {
+      oSB.setColor(new Color(Colors.COLOR_STATS_RECT_BG.r, Colors.COLOR_STATS_RECT_BG.g, Colors.COLOR_STATS_RECT_BG.b, 0.5F));
+      Renderer.drawBox(oSB, Images.statsRectBG, this.getPosX() + iTranslateX, this.getPosY() + iTranslateY, this.getWidth(), this.getHeight(), 1.0F);
+      oSB.setColor(Color.WHITE);
+      oSB.setColor(new Color(Colors.COLOR_GRADIENT.r, Colors.COLOR_GRADIENT.g, Colors.COLOR_GRADIENT.b, 0.4F));
+      Images.gradientXY.draw(oSB, this.getPosX() + iTranslateX, this.getPosY() + iTranslateY, this.getWidth(), this.getHeight() / 2, false, true);
+      Images.gradientXY
+         .draw(oSB, this.getPosX() + iTranslateX, this.getPosY() + this.getHeight() / 2 + iTranslateY, this.getWidth(), this.getHeight() / 2, false, false);
+      Images.gradientFull.draw(oSB, this.getPosX() + iTranslateX, this.getPosY() + this.getHeight() - 2 + iTranslateY, this.getWidth(), 1);
+      Images.gradientFull.draw(oSB, this.getPosX() + iTranslateX, this.getPosY() + 1 + iTranslateY, this.getWidth(), 1);
+      oSB.setColor(new Color(0.0F, 0.0F, 0.0F, 0.2F));
+      Images.gradientFull.draw(oSB, this.getPosX() + iTranslateX, this.getPosY() + iTranslateY, this.getWidth(), 1);
+      Images.gradientFull.draw(oSB, this.getPosX() + iTranslateX, this.getPosY() + this.getHeight() - 1 + iTranslateY, this.getWidth(), 1);
+      oSB.setColor(Color.WHITE);
+      Renderer.drawTextWithShadow(
+         oSB,
+         this.fontID,
+         this.getTextToDraw(),
+         this.getPosX() + this.getWidth() / 2 - this.getTextWidth() / 2 + iTranslateX,
+         this.getPosY() + this.getHeight() / 2 - this.getTextHeight() / 2 + iTranslateY,
+         this.getColor(isActive)
+      );
+   }
+
+   @Override
+   public String getTextToDraw() {
+      return this.sText;
+   }
+
+   @Override
+   protected Color getColor(boolean isActive) {
+      return Colors.getColorTopStats(isActive, this.getIsHovered());
+   }
+
+   @Override
+   public void setText(String sText) {
+      this.sText = sText;
+
+      try {
+         Renderer.glyphLayout.setText(Renderer.fontMain.get(this.fontID), sText);
+         this.iTextWidth = (int)Renderer.glyphLayout.width;
+         this.iTextHeight = (int)Renderer.glyphLayout.height;
+         if (this.getHeight() < this.iTextHeight) {
+            this.setHeight(this.iTextHeight);
+         }
+      } catch (Exception var3) {
+         CFG.exceptionStack(var3);
+      }
+   }
+}

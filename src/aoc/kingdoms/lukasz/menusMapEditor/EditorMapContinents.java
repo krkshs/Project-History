@@ -1,0 +1,175 @@
+package aoc.kingdoms.lukasz.menusMapEditor;
+
+import aoc.kingdoms.lukasz.jakowski.CFG;
+import aoc.kingdoms.lukasz.jakowski.Game;
+import aoc.kingdoms.lukasz.jakowski.Renderer.Renderer;
+import aoc.kingdoms.lukasz.jakowski.SaveLoad.SaveManager;
+import aoc.kingdoms.lukasz.map.province.ProvinceDrawDetails;
+import aoc.kingdoms.lukasz.menu.Colors;
+import aoc.kingdoms.lukasz.menu.Menu;
+import aoc.kingdoms.lukasz.menu.View;
+import aoc.kingdoms.lukasz.menu_element.MenuElement;
+import aoc.kingdoms.lukasz.menu_element.Status;
+import aoc.kingdoms.lukasz.menu_element.button.ButtonMain;
+import aoc.kingdoms.lukasz.textures.ImageManager;
+import aoc.kingdoms.lukasz.textures.Images;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import java.util.ArrayList;
+import java.util.List;
+
+public class EditorMapContinents extends Menu {
+   public static int currentContinentID = 1;
+   protected static List<EditorMapContinents.UndoContinent> lUndo = new ArrayList<>();
+
+   public EditorMapContinents() {
+      List<MenuElement> menuElements = new ArrayList<>();
+      menuElements.add(new ButtonMain(null, 1, -1, CFG.PADDING, CFG.GAME_HEIGHT - CFG.BUTTON_HEIGHT - CFG.PADDING, CFG.BUTTON_WIDTH * 2, true) {
+         @Override
+         public void updateLanguage() {
+            this.setText(Game.lang.get("Save"));
+         }
+
+         @Override
+         public void actionElement() {
+            SaveManager.saveProvinceDetails();
+            Renderer.drawArmyInProvince = true;
+            Game.menuManager.setViewID(View.EDITOR_MAPS_EDIT);
+            Game.menuManager.addToast(Game.lang.get("Saved"));
+         }
+      });
+      menuElements.add(new ButtonMain("", 1, -1, CFG.GAME_WIDTH - CFG.BUTTON_WIDTH * 2 - CFG.PADDING, CFG.PADDING, CFG.BUTTON_WIDTH * 2, true, false) {
+         @Override
+         public void actionElement() {
+            CFG.brushTool = !CFG.brushTool;
+         }
+
+         @Override
+         public void updateLanguage() {
+            this.setText(Game.lang.get("Brush"));
+         }
+
+         @Override
+         public boolean getCheckboxState() {
+            return CFG.brushTool;
+         }
+      });
+      menuElements.add(new ButtonMain("", 1, -1, CFG.GAME_WIDTH - CFG.BUTTON_WIDTH * 3 - CFG.PADDING * 2, CFG.PADDING, CFG.BUTTON_WIDTH, true) {
+         @Override
+         public void actionElement() {
+            EditorMapContinents.popUndo();
+         }
+
+         @Override
+         public void updateLanguage() {
+            this.setText(Game.lang.get("Undo"));
+         }
+
+         @Override
+         public boolean getClickable() {
+            return EditorMapContinents.lUndo.size() > 0;
+         }
+      });
+      menuElements.add(
+         new ButtonMain(null, 1, -1, CFG.PADDING * 2 + CFG.BUTTON_WIDTH * 2, CFG.GAME_HEIGHT - CFG.BUTTON_HEIGHT - CFG.PADDING, CFG.BUTTON_WIDTH * 2, true) {
+            @Override
+            public void updateLanguage() {
+               this.setText(Game.lang.get("Back"));
+            }
+
+            @Override
+            public void actionElement() {
+               Game.menuManager.setViewID(View.EDITOR_MAPS_EDIT);
+            }
+         }
+      );
+      this.initMenu(null, 0, 0, CFG.GAME_WIDTH, CFG.GAME_HEIGHT, menuElements, true);
+   }
+
+   @Override
+   public void draw(SpriteBatch oSB, int iTranslateX, int iTranslateY, boolean menuIsActive, Status titleStatus) {
+      ImageManager.getImage(Images.boxBIG)
+         .draw2(
+            oSB,
+            iTranslateX,
+            iTranslateY + CFG.GAME_HEIGHT - CFG.BUTTON_HEIGHT - CFG.PADDING * 2 - Images.boxTitleBORDERWIDTH,
+            CFG.BUTTON_WIDTH * 4 + CFG.PADDING * 3 + Images.boxTitleBORDERWIDTH,
+            CFG.BUTTON_HEIGHT + CFG.PADDING * 2 + Images.boxTitleBORDERWIDTH,
+            true,
+            false
+         );
+      ImageManager.getImage(Images.boxBIG)
+         .draw2(
+            oSB,
+            CFG.GAME_WIDTH - CFG.BUTTON_WIDTH * 3 - CFG.PADDING * 3 - Images.boxTitleBORDERWIDTH + iTranslateX,
+            iTranslateY,
+            CFG.BUTTON_WIDTH * 3 + CFG.PADDING * 3 + Images.boxTitleBORDERWIDTH,
+            CFG.BUTTON_HEIGHT + CFG.PADDING * 2 + Images.boxTitleBORDERWIDTH,
+            false,
+            true
+         );
+      this.drawEditorText(oSB, iTranslateX, iTranslateY);
+      super.draw(oSB, iTranslateX, iTranslateY, menuIsActive, titleStatus);
+   }
+
+   public final void drawEditorText(SpriteBatch oSB, int iTranslateX, int iTranslateY) {
+      String sText = "CONTINENT: " + Game.continents.lContinents.get(currentContinentID).sName;
+      Renderer.glyphLayout.setText(Renderer.fontMain.get(0), sText);
+      oSB.setColor(new Color(1.0F, 1.0F, 1.0F, 0.6F));
+      Renderer.drawBoxCorner(
+         oSB, iTranslateX + CFG.PADDING * 4, iTranslateY + CFG.PADDING * 4, (int)Renderer.glyphLayout.width, (int)Renderer.glyphLayout.height
+      );
+      oSB.setColor(Color.WHITE);
+      Renderer.drawText(oSB, sText, iTranslateX + CFG.PADDING * 4, iTranslateY + CFG.PADDING * 4, Colors.COLOR_TEXT_TITLE);
+   }
+
+   public static void actionUpdateData(boolean addUndo) {
+      if (Game.iActiveProvince >= 0 && !Game.getProvince(Game.iActiveProvince).getSeaProvince()) {
+         if (addUndo) {
+            addUndo(Game.iActiveProvince);
+         }
+
+         Game.getProvince(Game.iActiveProvince).setContinent(currentContinentID);
+         ProvinceDrawDetails.updateDrawProvinceDetails_Continent(Game.iActiveProvince);
+      }
+   }
+
+   private static final void addUndo(int nProvinceID) {
+      if (nProvinceID >= 0) {
+         if (lUndo.size() > 0) {
+            if (lUndo.get(lUndo.size() - 1).iProvinceID != nProvinceID && currentContinentID != Game.getProvince(nProvinceID).getContinent()) {
+               if (lUndo.size() > 50) {
+                  lUndo.remove(0);
+               }
+
+               lUndo.add(new EditorMapContinents.UndoContinent(nProvinceID, Game.getProvince(nProvinceID).getContinent()));
+            }
+         } else if (currentContinentID != Game.getProvince(nProvinceID).getContinent()) {
+            lUndo.add(new EditorMapContinents.UndoContinent(nProvinceID, Game.getProvince(nProvinceID).getContinent()));
+         }
+      }
+   }
+
+   protected static void popUndo() {
+      if (lUndo.size() > 0) {
+         Game.iActiveProvince = lUndo.get(lUndo.size() - 1).iProvinceID;
+         currentContinentID = lUndo.get(lUndo.size() - 1).iContinentID;
+         actionUpdateData(false);
+         if (!Game.getProvince(Game.iActiveProvince).getDrawProvince()) {
+            Game.mapCoords.centerToProvinceID(Game.iActiveProvince);
+         }
+
+         lUndo.remove(lUndo.size() - 1);
+      }
+   }
+
+   public static class UndoContinent {
+      protected int iProvinceID;
+      protected int iContinentID;
+
+      public UndoContinent(int iProvinceID, int iContinentID) {
+         this.iProvinceID = iProvinceID;
+         this.iContinentID = iContinentID;
+      }
+   }
+}

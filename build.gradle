@@ -1,0 +1,155 @@
+plugins { id 'java' }
+group = 'aoh3.recovered'
+version = '1.0'
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+sourceSets {
+    main {
+        java.srcDirs = ['src']
+        java.include 'aoc/**/*.java', 'age/**/*.java'
+        resources.srcDirs = ['resources']
+        resources.exclude 'META-INF/MANIFEST.MF', 'META-INF/INDEX.LIST'
+    }
+    assetTool {
+        java.srcDirs = ['asset-tools/src/main/java']
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+    mapEditor { java.srcDirs = ['editors/MapEditor_2/src'] }
+    cityEditor { java.srcDirs = ['editors/MapEditor_2_Cities/src'] }
+    classChecker { java.srcDirs = ['validation']; java.include 'ClassLoadCheck.java' }
+}
+dependencies {
+    implementation files('lib/dependencies.jar')
+    assetToolImplementation files('lib/gson-2.10.1.jar')
+    mapEditorImplementation files('lib/gson-2.10.1.jar')
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 8
+    options.compilerArgs += ['-Xlint:-options']
+    options.fork = true
+    options.forkOptions.memoryMaximumSize = '2g'
+}
+tasks.named('compileJava', JavaCompile) {
+    options.sourcepath = files(layout.buildDirectory.dir('empty-sourcepath'))
+}
+tasks.named('compileMapEditorJava', JavaCompile) { options.release = 11 }
+tasks.named('compileCityEditorJava', JavaCompile) { options.release = 11 }
+tasks.named('jar', Jar) {
+    archiveFileName = 'game.jar'
+    destinationDirectory = layout.buildDirectory
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    from(zipTree(file('lib/dependencies.jar'))) { exclude 'META-INF/MANIFEST.MF', 'META-INF/INDEX.LIST', '**/module-info.class' }
+    manifest { attributes('Main-Class': 'aoc.kingdoms.lukasz.jakowski.desktop.DesktopLauncher') }
+}
+def assetSource = layout.projectDirectory.dir('asset-src')
+def assetOverlay = layout.buildDirectory.dir('compiled-assets')
+def distribution = layout.buildDirectory.dir('dist')
+['exportAssets': ['export', '768m'], 'verifyDecodedAssets': ['verify', '512m']].each { name, values ->
+    tasks.register(name, JavaExec) {
+        group = name == 'exportAssets' ? 'assets' : 'verification'
+        dependsOn tasks.named('assetToolClasses')
+        classpath = sourceSets.assetTool.runtimeClasspath
+        mainClass = 'aoh3.tools.AssetTool'
+        maxHeapSize = values[1]
+        systemProperty 'java.awt.headless', 'true'
+        args values[0], file('assets').absolutePath, assetSource.asFile.absolutePath
+    }
+}
+tasks.register('compileAssets', JavaExec) {
+    group = 'assets'
+    description = 'Compile edited PNG masks and JSON templates into the original game formats.'
+    dependsOn tasks.named('assetToolClasses')
+    classpath = sourceSets.assetTool.runtimeClasspath
+    mainClass = 'aoh3.tools.AssetTool'
+    maxHeapSize = '512m'
+    systemProperty 'java.awt.headless', 'true'
+    inputs.dir(assetSource).withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.dir(assetOverlay)
+    outputs.file(layout.buildDirectory.file('asset-build-report.json'))
+    args 'compile', assetSource.asFile.absolutePath, assetOverlay.get().asFile.absolutePath
+}
+tasks.register('mapEditorJar', Jar) {
+    dependsOn tasks.named('mapEditorClasses')
+    archiveFileName = 'MapEditor_2.jar'
+    destinationDirectory = layout.buildDirectory.dir('editors')
+    from sourceSets.mapEditor.output
+    from(zipTree(file('lib/gson-2.10.1.jar'))) { exclude 'META-INF/MANIFEST.MF', '**/module-info.class' }
+    manifest { attributes('Main-Class': 'mapeditor.main') }
+}
+tasks.register('cityEditorJar', Jar) {
+    dependsOn tasks.named('cityEditorClasses')
+    archiveFileName = 'MapEditor_2_Cities.jar'
+    destinationDirectory = layout.buildDirectory.dir('editors')
+    from sourceSets.cityEditor.output
+    manifest { attributes('Main-Class': 'mapeditor.main') }
+}
+tasks.register('writeLaunchers') {
+    def output = layout.buildDirectory.dir('launchers')
+    outputs.dir(output)
+    doLast {
+        def folder = output.get().asFile
+        folder.mkdirs()
+        new File(folder, 'Launcher.bat').setText('@echo off\r\ncd /d "%~dp0"\r\nstart "" "%~dp0jre\\bin\\javaw.exe" -jar "%~dp0game.jar"\r\n', 'UTF-8')
+        new File(folder, 'game_debug.bat').setText('@echo off\r\ncd /d "%~dp0"\r\n"%~dp0jre\\bin\\java.exe" -jar "%~dp0game.jar"\r\npause\r\n', 'UTF-8')
+    }
+}
+tasks.register('packageGame', Sync) {
+    group = 'distribution'
+    description = 'Assemble the complete game with assets, editors, launchers and Java runtime.'
+    dependsOn tasks.named('jar'), tasks.named('compileAssets'), tasks.named('mapEditorJar'), tasks.named('cityEditorJar'), tasks.named('writeLaunchers')
+    into distribution
+    includeEmptyDirs = true
+    from('assets') { exclude { details -> new File(assetOverlay.get().asFile, details.path).isFile() } }
+    from(assetOverlay) { exclude '.compiled-files.json' }
+    from(tasks.named('jar'))
+    from('runtime/jre') { into 'jre' }
+    from(layout.buildDirectory.dir('launchers'))
+    ['map', 'modsExamples/Map_NewMap/map'].each { editorFolder ->
+        from(tasks.named('mapEditorJar')) { into editorFolder }
+        from(tasks.named('cityEditorJar')) { into editorFolder }
+    }
+    preserve { include 'saves/**', 'settings/**' }
+}
+tasks.register('verifyGameClasses', JavaExec) {
+    group = 'verification'
+    dependsOn tasks.named('jar'), tasks.named('classCheckerClasses')
+    classpath = sourceSets.classChecker.runtimeClasspath
+    mainClass = 'ClassLoadCheck'
+    executable = file('runtime/jre/bin/java.exe').absolutePath
+    maxHeapSize = '512m'
+    inputs.file(tasks.named('jar', Jar).flatMap { it.archiveFile })
+    outputs.file(layout.buildDirectory.file('reports/class-loading.json'))
+    args tasks.named('jar', Jar).get().archiveFile.get().asFile.absolutePath
+    doFirst {
+        def report = layout.buildDirectory.file('reports/class-loading.json').get().asFile
+        report.parentFile.mkdirs()
+        standardOutput = new FileOutputStream(report)
+    }
+    doLast { standardOutput.close() }
+}
+tasks.register('gameZip', Zip) {
+    group = 'distribution'
+    dependsOn tasks.named('packageGame')
+    archiveFileName = 'Project-History.zip'
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    from distribution
+}
+tasks.register('run', JavaExec) {
+    group = 'application'
+    dependsOn tasks.named('packageGame')
+    classpath = files(tasks.named('jar', Jar).flatMap { it.archiveFile })
+    mainClass = 'aoc.kingdoms.lukasz.jakowski.desktop.DesktopLauncher'
+    workingDir = distribution.get().asFile
+    executable = file('runtime/jre/bin/java.exe').absolutePath
+}
+tasks.named('check') { dependsOn tasks.named('verifyGameClasses') }
+tasks.named('build') { dependsOn tasks.named('packageGame') }
+tasks.named('wrapper', Wrapper) {
+    gradleVersion = '8.14.3'
+    distributionType = Wrapper.DistributionType.BIN
+    distributionSha256Sum = 'bd71102213493060956ec229d946beee57158dbd89d0e62b91bca0fa2c5f3531'
+}

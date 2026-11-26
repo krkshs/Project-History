@@ -1,0 +1,8 @@
+* text=auto
+/README*.md text eol=lf
+/gradlew text eol=lf
+*.bat text eol=crlf
+/asset-src/** -text
+/assets/** -text
+/resources/** -text
+/runtime/** -text

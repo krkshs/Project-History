@@ -1,0 +1,280 @@
+package aoc.kingdoms.lukasz.menusInGame;
+
+import aoc.kingdoms.lukasz.events.Event;
+import aoc.kingdoms.lukasz.events.EventsManager;
+import aoc.kingdoms.lukasz.jakowski.CFG;
+import aoc.kingdoms.lukasz.jakowski.Game;
+import aoc.kingdoms.lukasz.jakowski.Missions.MissionTree;
+import aoc.kingdoms.lukasz.jakowski.Renderer.Renderer;
+import aoc.kingdoms.lukasz.jakowski.Steam.SteamAchievementsManager;
+import aoc.kingdoms.lukasz.map.ResourcesManager;
+import aoc.kingdoms.lukasz.menu.Colors;
+import aoc.kingdoms.lukasz.menu.Menu;
+import aoc.kingdoms.lukasz.menu.menuTitle.MenuTitleIMG_DoubleText;
+import aoc.kingdoms.lukasz.menu_element.Empty;
+import aoc.kingdoms.lukasz.menu_element.MenuElement;
+import aoc.kingdoms.lukasz.menu_element.Status;
+import aoc.kingdoms.lukasz.menu_element.button.ButtonGame_Value;
+import aoc.kingdoms.lukasz.menu_element.menuElementHover.MenuElement_Hover;
+import aoc.kingdoms.lukasz.menu_element.menuElementHover.MenuElement_HoverElement;
+import aoc.kingdoms.lukasz.menu_element.menuElementHover.MenuElement_HoverElement_Type;
+import aoc.kingdoms.lukasz.menu_element.menuElementHover.MenuElement_HoverElement_Type_Image;
+import aoc.kingdoms.lukasz.menu_element.menuElementHover.MenuElement_HoverElement_Type_Text;
+import aoc.kingdoms.lukasz.menu_element.menuElementHover.MenuElement_HoverElement_Type_TextTitle_BG;
+import aoc.kingdoms.lukasz.menu_element.textStatic.Text_Desc;
+import aoc.kingdoms.lukasz.textures.ImageManager;
+import aoc.kingdoms.lukasz.textures.Images;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import java.util.ArrayList;
+import java.util.List;
+
+public class InGame_Event extends Menu {
+   protected static final int ANIMATION_TIME = 60;
+   public static long lTime = 0L;
+   public Event event;
+   public static int eventType = 0;
+   public static int eventID = 0;
+   public int imgWidth = 1;
+   public int imgHeight = 1;
+
+   public InGame_Event(Event nEvent, int nEventType, int nEventID) {
+      List<MenuElement> menuElements = new ArrayList<>();
+      this.event = nEvent;
+      eventType = nEventType;
+      eventID = nEventID;
+      int paddingLeft = CFG.PADDING * 2 + Images.boxTitleBORDERWIDTH;
+      int titleHeight = ImageManager.getImage(Images.title600).getHeight();
+      int menuWidth = ImageManager.getImage(Images.title600).getWidth();
+      int menuX = CFG.BUTTON_WIDTH + Renderer.boxBGExtraY + CFG.PADDING;
+      int menuY = ImageManager.getImage(Images.topStats).getHeight() + CFG.PADDING * 2 + ImageManager.getImage(Images.title600).getHeight();
+      int buttonY = CFG.PADDING * 2;
+      int buttonX = Images.boxTitleBORDERWIDTH;
+      EventsManager.loadEventIMG(this.event.image);
+
+      try {
+         float fScale = (float)(menuWidth - Images.boxTitleBORDERWIDTH * 2) / EventsManager.eventIMG.getWidth();
+         this.imgWidth = menuWidth - Images.boxTitleBORDERWIDTH * 2;
+         this.imgHeight = (int)(EventsManager.eventIMG.getHeight() * fScale);
+         buttonY += this.imgHeight;
+      } catch (Exception var16) {
+         CFG.exceptionStack(var16);
+      }
+
+      if (eventType != 2 && eventType != 5) {
+         menuElements.add(new Text_Desc(Game.lang.get(this.event.desc), paddingLeft, buttonY, menuWidth - paddingLeft * 2));
+      } else {
+         String sResource = "";
+         String sPriceChange = "";
+
+         try {
+            sResource = ResourcesManager.getResourceName(this.event.options.get(0).outcome.get(0).getValue1());
+            sPriceChange = CFG.getPrecision2(this.event.options.get(0).outcome.get(0).getValue2(), 10);
+         } catch (Exception var15) {
+            CFG.exceptionStack(var15);
+         }
+
+         menuElements.add(new Text_Desc(Game.lang.get(this.event.desc, sResource, sPriceChange), paddingLeft, buttonY, menuWidth - paddingLeft * 2));
+      }
+
+      buttonY += menuElements.get(menuElements.size() - 1).getHeight() + CFG.PADDING * 2;
+
+      for (int i = 0; i < this.event.options.size(); i++) {
+         menuElements.add(
+            new ButtonGame_Value(
+               Game.lang.get(this.event.options.get(i).name), CFG.FONT_REGULAR, -1, paddingLeft, buttonY, menuWidth - paddingLeft * 2, true, i
+            ) {
+               @Override
+               public void actionElement() {
+                  Game.player.removeActiveEvent(InGame_Event.eventType, InGame_Event.eventID);
+                  if (InGame_Event.eventType == 999) {
+                     MissionTree.takeMissionDecision(Game.player.iCivID, InGame_Event.eventID, this.getCurrent());
+                  } else if (InGame_Event.eventType == 1000) {
+                     MissionTree.takeMissionDecision_Civ(Game.player.iCivID, InGame_Event.eventID, this.getCurrent());
+                     Game.player.currSituation.updateCurrentSituation();
+                  } else {
+                     EventsManager.takeEventDecision(Game.player.iCivID, InGame_Event.eventType, InGame_Event.eventID, this.getCurrent());
+                     Game.player.currSituation.updateCurrentSituation();
+                  }
+
+                  Game.menuManager.rebuildInGame_Right();
+                  Game.menuManager.setVisibleInGame_Event(false);
+                  SteamAchievementsManager.unlockAchievement(SteamAchievementsManager.EVENT_RES);
+               }
+
+               @Override
+               public void buildElementHover() {
+                  List<MenuElement_HoverElement> nElements = new ArrayList<>();
+                  List<MenuElement_HoverElement_Type> nData = new ArrayList<>();
+                  nData.add(new MenuElement_HoverElement_Type_TextTitle_BG(this.getText(), CFG.FONT_BOLD, Colors.HOVER_GOLD));
+                  nElements.add(new MenuElement_HoverElement(nData));
+                  nData.clear();
+
+                  try {
+                     for (int ix = 0; ix < InGame_Event.this.event.options.get(this.getCurrent()).outcome.size(); ix++) {
+                        if (InGame_Event.this.event.options.get(this.getCurrent()).outcome.get(ix).getStringLeft() != null) {
+                           nData.add(
+                              new MenuElement_HoverElement_Type_Text(
+                                 InGame_Event.this.event.options.get(this.getCurrent()).outcome.get(ix).getStringLeft(), CFG.FONT_REGULAR_SMALL
+                              )
+                           );
+                           if (InGame_Event.this.event.options.get(this.getCurrent()).outcome.get(ix).getStringRight() != null) {
+                              nData.add(
+                                 new MenuElement_HoverElement_Type_Text(
+                                    InGame_Event.this.event.options.get(this.getCurrent()).outcome.get(ix).getStringRight(),
+                                    CFG.FONT_BOLD_SMALL,
+                                    Colors.HOVER_GOLD
+                                 )
+                              );
+                           }
+
+                           if (InGame_Event.this.event.options.get(this.getCurrent()).outcome.get(ix).getImage() >= 0) {
+                              nData.add(
+                                 new MenuElement_HoverElement_Type_Image(
+                                    InGame_Event.this.event.options.get(this.getCurrent()).outcome.get(ix).getImage(),
+                                    CFG.PADDING,
+                                    InGame_Event.this.event.options.get(this.getCurrent())
+                                             .outcome
+                                             .get(ix)
+                                             .getStringRight2(InGame_Event.this.event.options.get(this.getCurrent()).bonus_duration)
+                                          != null
+                                       ? CFG.PADDING
+                                       : 0
+                                 )
+                              );
+                           }
+
+                           if (InGame_Event.this.event.options.get(this.getCurrent())
+                                 .outcome
+                                 .get(ix)
+                                 .getStringRight2(InGame_Event.this.event.options.get(this.getCurrent()).bonus_duration)
+                              != null) {
+                              nData.add(
+                                 new MenuElement_HoverElement_Type_Text(
+                                    InGame_Event.this.event.options.get(this.getCurrent())
+                                       .outcome
+                                       .get(ix)
+                                       .getStringRight2(InGame_Event.this.event.options.get(this.getCurrent()).bonus_duration),
+                                    CFG.FONT_REGULAR_SMALL,
+                                    Colors.HOVER_RIGHT2
+                                 )
+                              );
+                           }
+
+                           nElements.add(new MenuElement_HoverElement(nData));
+                           nData.clear();
+                        }
+                     }
+                  } catch (Exception var4) {
+                     CFG.exceptionStack(var4);
+                  }
+
+                  this.menuElementHover = new MenuElement_Hover(nElements, nElements.size() == 1);
+               }
+            }
+         );
+         buttonY += menuElements.get(menuElements.size() - 1).getHeight() + CFG.PADDING;
+      }
+
+      buttonY = 0;
+      int i = 0;
+
+      for (int iSize = menuElements.size(); i < iSize; i++) {
+         if (buttonY < menuElements.get(i).getPosY() + menuElements.get(i).getHeight() + CFG.PADDING * 2) {
+            buttonY = menuElements.get(i).getPosY() + menuElements.get(i).getHeight() + CFG.PADDING * 2;
+         }
+      }
+
+      i = Math.min(buttonY, CFG.GAME_HEIGHT - menuY - CFG.PADDING * 2);
+      menuElements.add(new Empty(0, 0, menuWidth, Math.max(buttonY, i)));
+      int inProvinceID = Game.getCiv(Game.player.iCivID).eventProvinceID;
+      if (inProvinceID < 0 && Game.getCiv(Game.player.iCivID).getCapitalProvinceID() >= 0) {
+         inProvinceID = Game.getCiv(Game.player.iCivID).getCapitalProvinceID();
+      } else if (Game.getCiv(Game.player.iCivID).getNumOfProvinces() > 0) {
+         inProvinceID = Game.getCiv(Game.player.iCivID).getProvinceID(Game.oR.nextInt(Game.getCiv(Game.player.iCivID).getNumOfProvinces()));
+      }
+
+      inProvinceID = Math.max(0, inProvinceID);
+      this.initMenu(
+         new MenuTitleIMG_DoubleText(
+            Game.lang.get(this.event.title), Game.lang.get("EventInX", Game.getProvince(inProvinceID).getProvinceName()), true, false, Images.title600
+         ) {
+            @Override
+            public long getTime() {
+               return InGame_Event.lTime;
+            }
+         },
+         CFG.GAME_WIDTH / 2 - menuWidth / 2,
+         CFG.GAME_HEIGHT / 5,
+         menuWidth,
+         i,
+         menuElements,
+         false,
+         true
+      );
+      this.drawScrollPositionAlways = false;
+   }
+
+   @Override
+   public void draw(SpriteBatch oSB, int iTranslateX, int iTranslateY, boolean menuIsActive, Status titleStatus) {
+      if (lTime + 60L >= CFG.currentTimeMillis) {
+         iTranslateY = iTranslateY - CFG.BUTTON_HEIGHT + (int)(CFG.BUTTON_HEIGHT * ((float)(CFG.currentTimeMillis - lTime) / 60.0F));
+      }
+
+      Renderer.drawBoxCorner(
+         oSB,
+         this.getPosX() + iTranslateX,
+         this.getPosY() - this.getTitle().getHeight() + iTranslateY,
+         this.getWidth(),
+         this.getHeight() + this.getTitle().getHeight() + CFG.PADDING
+      );
+      Renderer.drawMenusBox(
+         oSB,
+         this.getPosX() + iTranslateX,
+         this.getPosY() + iTranslateY,
+         this.getWidth(),
+         this.getHeight() + CFG.PADDING,
+         false,
+         Images.insideTop600,
+         Images.insideBot600
+      );
+      oSB.setColor(Color.WHITE);
+
+      try {
+         EventsManager.eventIMG
+            .draw(oSB, this.getPosX() + Images.boxTitleBORDERWIDTH + iTranslateX, this.getPosY() + iTranslateY, this.imgWidth, this.imgHeight);
+         Renderer.drawBox(
+            oSB,
+            Images.eventCorner,
+            this.getPosX() + Images.boxTitleBORDERWIDTH + iTranslateX,
+            this.getPosY() + iTranslateY,
+            this.imgWidth,
+            this.imgHeight,
+            1.0F
+         );
+         oSB.setColor(new Color(0.0F, 0.0F, 0.0F, 0.5F));
+         ImageManager.getImage(Images.gradientVertical)
+            .draw(oSB, this.getPosX() + Images.boxTitleBORDERWIDTH + iTranslateX, this.getPosY() + this.imgHeight + iTranslateY, this.imgWidth, CFG.PADDING * 2);
+         Images.gradientXY
+            .draw(
+               oSB,
+               this.getPosX() + Images.boxTitleBORDERWIDTH + iTranslateX,
+               this.getPosY() + this.imgHeight + iTranslateY,
+               this.imgWidth,
+               CFG.PADDING * 2,
+               false,
+               true
+            );
+         oSB.setColor(Color.WHITE);
+      } catch (Exception var7) {
+      }
+
+      super.draw(oSB, iTranslateX, iTranslateY, menuIsActive, titleStatus);
+   }
+
+   @Override
+   public void setVisible(boolean visible) {
+      super.setVisible(visible);
+      lTime = CFG.currentTimeMillis;
+   }
+}

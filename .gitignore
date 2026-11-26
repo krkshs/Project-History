@@ -1,0 +1,10 @@
+/.gradle/
+/build/
+/tools/
+/logs/
+/validation/checker/
+/validation/editors/
+/validation/game/
+/validation/*.log
+/validation/game-sources.txt
+/recovery-report.json

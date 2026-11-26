@@ -1,0 +1,50 @@
+package com.badlogic.gdx.maps.tiled;
+
+import com.badlogic.gdx.maps.MapProperties;
+import com.badlogic.gdx.utils.IntMap;
+import java.util.Iterator;
+
+public class TiledMapTileSet implements Iterable<TiledMapTile> {
+  private String name;
+  
+  private IntMap<TiledMapTile> tiles;
+  
+  private MapProperties properties;
+  
+  public String getName() {
+    return this.name;
+  }
+  
+  public void setName(String name) {
+    this.name = name;
+  }
+  
+  public MapProperties getProperties() {
+    return this.properties;
+  }
+  
+  public TiledMapTileSet() {
+    this.tiles = new IntMap<>();
+    this.properties = new MapProperties();
+  }
+  
+  public TiledMapTile getTile(int id) {
+    return this.tiles.get(id);
+  }
+  
+  public Iterator<TiledMapTile> iterator() {
+    return this.tiles.values().iterator();
+  }
+  
+  public void putTile(int id, TiledMapTile tile) {
+    this.tiles.put(id, tile);
+  }
+  
+  public void removeTile(int id) {
+    this.tiles.remove(id);
+  }
+  
+  public int size() {
+    return this.tiles.size;
+  }
+}

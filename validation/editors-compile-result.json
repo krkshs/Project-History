@@ -1,0 +1,16 @@
+[
+  {
+    "Editor": "MapEditor_2",
+    "SourceFiles": 3,
+    "ExitCode": 0,
+    "GsonVersion": "2.10.1",
+    "GsonSHA256": "4241c14a7727c34feea6507ec801318a3d4a90f070e4525681079fb94ee4c593"
+  },
+  {
+    "Editor": "MapEditor_2_Cities",
+    "SourceFiles": 3,
+    "ExitCode": 0,
+    "GsonVersion": "2.10.1",
+    "GsonSHA256": "4241c14a7727c34feea6507ec801318a3d4a90f070e4525681079fb94ee4c593"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "BuildSystem": "Gradle 8.14.3",
+  "OriginalGameJarRequired": false,
+  "GameClassesCompiledFromSource": 5330,
+  "OriginalGameClassesInDependencies": 0,
+  "ExternalAssets": 58526,
+  "EditableBinaryAssets": 30011,
+  "DistributionFiles": 58772,
+  "DistributionBytes": 862600391.0,
+  "MissingAssets": 0,
+  "RebuildWorkflowVerified": true,
+  "NativeGraphicsVerified": true,
+  "FullGameplaySessionTested": false,
+  "GameJarSHA256": "c3ee1dbb042705f556dbe235dae390143012be87a2d904b6cbde833b68aeb72f"
+}

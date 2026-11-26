@@ -1,0 +1,338 @@
+package com.badlogic.gdx.graphics.g3d.utils;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.model.MeshPart;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Pool;
+
+public interface MeshPartBuilder {
+  MeshPart getMeshPart();
+  
+  int getPrimitiveType();
+  
+  VertexAttributes getAttributes();
+  
+  void setColor(Color paramColor);
+  
+  void setColor(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4);
+  
+  void setUVRange(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4);
+  
+  void setUVRange(TextureRegion paramTextureRegion);
+  
+  Matrix4 getVertexTransform(Matrix4 paramMatrix4);
+  
+  void setVertexTransform(Matrix4 paramMatrix4);
+  
+  boolean isVertexTransformationEnabled();
+  
+  void setVertexTransformationEnabled(boolean paramBoolean);
+  
+  void ensureVertices(int paramInt);
+  
+  void ensureIndices(int paramInt);
+  
+  void ensureCapacity(int paramInt1, int paramInt2);
+  
+  void ensureTriangleIndices(int paramInt);
+  
+  void ensureRectangleIndices(int paramInt);
+  
+  short vertex(float... paramVarArgs);
+  
+  short vertex(Vector3 paramVector31, Vector3 paramVector32, Color paramColor, Vector2 paramVector2);
+  
+  short vertex(VertexInfo paramVertexInfo);
+  
+  short lastIndex();
+  
+  void index(short paramShort);
+  
+  void index(short paramShort1, short paramShort2);
+  
+  void index(short paramShort1, short paramShort2, short paramShort3);
+  
+  void index(short paramShort1, short paramShort2, short paramShort3, short paramShort4);
+  
+  void index(short paramShort1, short paramShort2, short paramShort3, short paramShort4, short paramShort5, short paramShort6);
+  
+  void index(short paramShort1, short paramShort2, short paramShort3, short paramShort4, short paramShort5, short paramShort6, short paramShort7, short paramShort8);
+  
+  void line(short paramShort1, short paramShort2);
+  
+  void line(VertexInfo paramVertexInfo1, VertexInfo paramVertexInfo2);
+  
+  void line(Vector3 paramVector31, Vector3 paramVector32);
+  
+  void line(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6);
+  
+  void line(Vector3 paramVector31, Color paramColor1, Vector3 paramVector32, Color paramColor2);
+  
+  void triangle(short paramShort1, short paramShort2, short paramShort3);
+  
+  void triangle(VertexInfo paramVertexInfo1, VertexInfo paramVertexInfo2, VertexInfo paramVertexInfo3);
+  
+  void triangle(Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33);
+  
+  void triangle(Vector3 paramVector31, Color paramColor1, Vector3 paramVector32, Color paramColor2, Vector3 paramVector33, Color paramColor3);
+  
+  void rect(short paramShort1, short paramShort2, short paramShort3, short paramShort4);
+  
+  void rect(VertexInfo paramVertexInfo1, VertexInfo paramVertexInfo2, VertexInfo paramVertexInfo3, VertexInfo paramVertexInfo4);
+  
+  void rect(Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34, Vector3 paramVector35);
+  
+  void rect(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13, float paramFloat14, float paramFloat15);
+  
+  void addMesh(Mesh paramMesh);
+  
+  void addMesh(MeshPart paramMeshPart);
+  
+  void addMesh(Mesh paramMesh, int paramInt1, int paramInt2);
+  
+  void addMesh(float[] paramArrayOffloat, short[] paramArrayOfshort);
+  
+  void addMesh(float[] paramArrayOffloat, short[] paramArrayOfshort, int paramInt1, int paramInt2);
+  
+  @Deprecated
+  void patch(VertexInfo paramVertexInfo1, VertexInfo paramVertexInfo2, VertexInfo paramVertexInfo3, VertexInfo paramVertexInfo4, int paramInt1, int paramInt2);
+  
+  @Deprecated
+  void patch(Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34, Vector3 paramVector35, int paramInt1, int paramInt2);
+  
+  @Deprecated
+  void patch(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13, float paramFloat14, float paramFloat15, int paramInt1, int paramInt2);
+  
+  @Deprecated
+  void box(VertexInfo paramVertexInfo1, VertexInfo paramVertexInfo2, VertexInfo paramVertexInfo3, VertexInfo paramVertexInfo4, VertexInfo paramVertexInfo5, VertexInfo paramVertexInfo6, VertexInfo paramVertexInfo7, VertexInfo paramVertexInfo8);
+  
+  @Deprecated
+  void box(Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34, Vector3 paramVector35, Vector3 paramVector36, Vector3 paramVector37, Vector3 paramVector38);
+  
+  @Deprecated
+  void box(Matrix4 paramMatrix4);
+  
+  @Deprecated
+  void box(float paramFloat1, float paramFloat2, float paramFloat3);
+  
+  @Deprecated
+  void box(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6);
+  
+  @Deprecated
+  void circle(float paramFloat1, int paramInt, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7);
+  
+  @Deprecated
+  void circle(float paramFloat, int paramInt, Vector3 paramVector31, Vector3 paramVector32);
+  
+  @Deprecated
+  void circle(float paramFloat, int paramInt, Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34);
+  
+  @Deprecated
+  void circle(float paramFloat1, int paramInt, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13);
+  
+  @Deprecated
+  void circle(float paramFloat1, int paramInt, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9);
+  
+  @Deprecated
+  void circle(float paramFloat1, int paramInt, Vector3 paramVector31, Vector3 paramVector32, float paramFloat2, float paramFloat3);
+  
+  @Deprecated
+  void circle(float paramFloat1, int paramInt, Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34, float paramFloat2, float paramFloat3);
+  
+  @Deprecated
+  void circle(float paramFloat1, int paramInt, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13, float paramFloat14, float paramFloat15);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, Vector3 paramVector31, Vector3 paramVector32);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13, float paramFloat14);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, Vector3 paramVector31, Vector3 paramVector32, float paramFloat3, float paramFloat4);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, Vector3 paramVector31, Vector3 paramVector32, Vector3 paramVector33, Vector3 paramVector34, float paramFloat3, float paramFloat4);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, int paramInt, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13, float paramFloat14, float paramFloat15, float paramFloat16);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, int paramInt, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12, float paramFloat13, float paramFloat14, float paramFloat15, float paramFloat16, float paramFloat17, float paramFloat18);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, int paramInt, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10, float paramFloat11, float paramFloat12);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, int paramInt, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, float paramFloat9, float paramFloat10);
+  
+  @Deprecated
+  void ellipse(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, int paramInt, Vector3 paramVector31, Vector3 paramVector32);
+  
+  @Deprecated
+  void cylinder(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt);
+  
+  @Deprecated
+  void cylinder(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt, float paramFloat4, float paramFloat5);
+  
+  @Deprecated
+  void cylinder(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt, float paramFloat4, float paramFloat5, boolean paramBoolean);
+  
+  @Deprecated
+  void cone(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt);
+  
+  @Deprecated
+  void cone(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt, float paramFloat4, float paramFloat5);
+  
+  @Deprecated
+  void sphere(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt1, int paramInt2);
+  
+  @Deprecated
+  void sphere(Matrix4 paramMatrix4, float paramFloat1, float paramFloat2, float paramFloat3, int paramInt1, int paramInt2);
+  
+  @Deprecated
+  void sphere(float paramFloat1, float paramFloat2, float paramFloat3, int paramInt1, int paramInt2, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7);
+  
+  @Deprecated
+  void sphere(Matrix4 paramMatrix4, float paramFloat1, float paramFloat2, float paramFloat3, int paramInt1, int paramInt2, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7);
+  
+  @Deprecated
+  void capsule(float paramFloat1, float paramFloat2, int paramInt);
+  
+  @Deprecated
+  void arrow(float paramFloat1, float paramFloat2, float paramFloat3, float paramFloat4, float paramFloat5, float paramFloat6, float paramFloat7, float paramFloat8, int paramInt);
+  
+  public static class VertexInfo implements Pool.Poolable {
+    public final Vector3 position = new Vector3();
+    
+    public boolean hasPosition;
+    
+    public final Vector3 normal = new Vector3(0.0F, 1.0F, 0.0F);
+    
+    public boolean hasNormal;
+    
+    public final Color color = new Color(1.0F, 1.0F, 1.0F, 1.0F);
+    
+    public boolean hasColor;
+    
+    public final Vector2 uv = new Vector2();
+    
+    public boolean hasUV;
+    
+    public void reset() {
+      this.position.set(0.0F, 0.0F, 0.0F);
+      this.normal.set(0.0F, 1.0F, 0.0F);
+      this.color.set(1.0F, 1.0F, 1.0F, 1.0F);
+      this.uv.set(0.0F, 0.0F);
+    }
+    
+    public VertexInfo set(Vector3 pos, Vector3 nor, Color col, Vector2 uv) {
+      reset();
+      this.hasPosition = (pos != null);
+      if (this.hasPosition)
+        this.position.set(pos); 
+      this.hasNormal = (nor != null);
+      if (this.hasNormal)
+        this.normal.set(nor); 
+      this.hasColor = (col != null);
+      if (this.hasColor)
+        this.color.set(col); 
+      this.hasUV = (uv != null);
+      if (this.hasUV)
+        this.uv.set(uv); 
+      return this;
+    }
+    
+    public VertexInfo set(VertexInfo other) {
+      if (other == null)
+        return set(null, null, null, null); 
+      this.hasPosition = other.hasPosition;
+      this.position.set(other.position);
+      this.hasNormal = other.hasNormal;
+      this.normal.set(other.normal);
+      this.hasColor = other.hasColor;
+      this.color.set(other.color);
+      this.hasUV = other.hasUV;
+      this.uv.set(other.uv);
+      return this;
+    }
+    
+    public VertexInfo setPos(float x, float y, float z) {
+      this.position.set(x, y, z);
+      this.hasPosition = true;
+      return this;
+    }
+    
+    public VertexInfo setPos(Vector3 pos) {
+      this.hasPosition = (pos != null);
+      if (this.hasPosition)
+        this.position.set(pos); 
+      return this;
+    }
+    
+    public VertexInfo setNor(float x, float y, float z) {
+      this.normal.set(x, y, z);
+      this.hasNormal = true;
+      return this;
+    }
+    
+    public VertexInfo setNor(Vector3 nor) {
+      this.hasNormal = (nor != null);
+      if (this.hasNormal)
+        this.normal.set(nor); 
+      return this;
+    }
+    
+    public VertexInfo setCol(float r, float g, float b, float a) {
+      this.color.set(r, g, b, a);
+      this.hasColor = true;
+      return this;
+    }
+    
+    public VertexInfo setCol(Color col) {
+      this.hasColor = (col != null);
+      if (this.hasColor)
+        this.color.set(col); 
+      return this;
+    }
+    
+    public VertexInfo setUV(float u, float v) {
+      this.uv.set(u, v);
+      this.hasUV = true;
+      return this;
+    }
+    
+    public VertexInfo setUV(Vector2 uv) {
+      this.hasUV = (uv != null);
+      if (this.hasUV)
+        this.uv.set(uv); 
+      return this;
+    }
+    
+    public VertexInfo lerp(VertexInfo target, float alpha) {
+      if (this.hasPosition && target.hasPosition)
+        this.position.lerp(target.position, alpha); 
+      if (this.hasNormal && target.hasNormal)
+        this.normal.lerp(target.normal, alpha); 
+      if (this.hasColor && target.hasColor)
+        this.color.lerp(target.color, alpha); 
+      if (this.hasUV && target.hasUV)
+        this.uv.lerp(target.uv, alpha); 
+      return this;
+    }
+  }
+}
